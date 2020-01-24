@@ -18,3 +18,4 @@ mod frame_alloc;
 pub mod mapper;
 pub mod page;
 pub mod page_table;
+pub mod visitor;

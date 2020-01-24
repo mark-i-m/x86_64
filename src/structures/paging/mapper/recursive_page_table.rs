@@ -9,6 +9,7 @@ use crate::structures::paging::{
     frame_alloc::FrameAllocator,
     page::NotGiantPageSize,
     page_table::{FrameError, PageTable, PageTableEntry, PageTableFlags},
+    visitor::{PageTableVisit, PageTableVisitMut},
     Page, PageSize, PhysFrame, Size1GiB, Size2MiB, Size4KiB,
 };
 use crate::VirtAddr;
@@ -17,13 +18,13 @@ use crate::VirtAddr;
 ///
 /// This recursive mapping allows accessing all page tables in the hierarchy:
 ///
-/// - To access the level 4 page table, we “loop“ (i.e. follow the recursively mapped entry) four
-///   times.
+/// - To access the level 4 page table (the root table), we “loop“ (i.e. follow the recursively
+///   mapped entry) four times.
 /// - To access a level 3 page table, we “loop” three times and then use the level 4 index.
 /// - To access a level 2 page table, we “loop” two times, then use the level 4 index, then the
 ///   level 3 index.
-/// - To access a level 1 page table, we “loop” once, then use the level 4 index, then the
-///   level 3 index, then the level 2 index.
+/// - To access a level 1 page table (a leaf table), we “loop” once, then use the level 4 index,
+///   then the level 3 index, then the level 2 index.
 ///
 /// This struct implements the `Mapper` trait.
 #[derive(Debug)]
@@ -618,4 +619,21 @@ fn p1_page(page: Page<Size4KiB>, recursive_index: PageTableIndex) -> Page {
         page.p3_index(),
         page.p2_index(),
     )
+}
+
+pub struct RecursivePageTableVisitor<'a> {
+    pt: RecursivePageTable<'a>,
+    level: usize,
+}
+
+impl<'a> RecursivePageTableVisitor<'a> {
+    pub fn new(pt: RecursivePageTable<'a>) -> Self {
+        RecursivePageTableVisitor { pt, level: 0 }
+    }
+}
+
+impl<'a> PageTableVisit for RecursivePageTableVisitor<'a> {
+    fn get_page(&mut self, paddr: PhysFrame) -> Page<Size4KiB> {
+        // What to put here?
+    }
 }
